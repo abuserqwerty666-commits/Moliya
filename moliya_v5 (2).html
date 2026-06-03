@@ -1,0 +1,1599 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Moliya</title>
+<meta name="description" content="Shaxsiy moliya dasturi">
+<meta name="theme-color" content="#1a1a1a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Moliya">
+<link rel="manifest" id="pwa-manifest">
+<link rel="apple-touch-icon" id="pwa-icon">
+<script>
+// PWA Manifest — dinamik yaratiladi
+const manifest = {
+  name: "Moliya — Shaxsiy Moliya",
+  short_name: "Moliya",
+  description: "Shaxsiy kirim-chiqim hisobi",
+  start_url: ".",
+  display: "standalone",
+  background_color: "#f5f5f0",
+  theme_color: "#1a1a1a",
+  orientation: "any",
+  icons: [
+    {
+      src: "data:image/svg+xml," + encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='40' fill='%231a1a1a'/><text x='96' y='130' font-size='110' text-anchor='middle' fill='%23f5f5f0'>💰</text></svg>`),
+      sizes: "192x192",
+      type: "image/svg+xml",
+      purpose: "any maskable"
+    },
+    {
+      src: "data:image/svg+xml," + encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='100' fill='%231a1a1a'/><text x='256' y='360' font-size='300' text-anchor='middle' fill='%23f5f5f0'>💰</text></svg>`),
+      sizes: "512x512",
+      type: "image/svg+xml",
+      purpose: "any maskable"
+    }
+  ]
+};
+const blob = new Blob([JSON.stringify(manifest)], {type: 'application/manifest+json'});
+const manifestURL = URL.createObjectURL(blob);
+document.getElementById('pwa-manifest').href = manifestURL;
+
+// Apple icon
+const iconSVG = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%231a1a1a'/><text x='90' y='125' font-size='100' text-anchor='middle' fill='%23f5f5f0'>💰</text></svg>`;
+const iconBlob = new Blob([iconSVG], {type: 'image/svg+xml'});
+document.getElementById('pwa-icon').href = URL.createObjectURL(iconBlob);
+</script>
+<style>
+:root{
+--bg:#f5f5f0;--bg2:#ebebе6;--bg3:#e0e0db;--card:#fff;--border:#ddd;--border2:#eee;
+--text:#1a1a1a;--text2:#555;--text3:#999;
+--green:#3B6D11;--green-bg:#EAF3DE;--green-bd:#639922;
+--red:#A32D2D;--red-bg:#FCEBEB;--red-bd:#E24B4A;
+--blue:#185FA5;--blue-bg:#E6F1FB;--blue-bd:#378ADD;
+--r:8px;--r2:12px;--shadow:0 1px 4px rgba(0,0,0,0.07);
+}
+.dark{
+--bg:#141414;--bg2:#1e1e1e;--bg3:#282828;--card:#1e1e1e;--border:#333;--border2:#2a2a2a;
+--text:#f0f0f0;--text2:#aaa;--text3:#666;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background 0.2s,color 0.2s}
+a{color:inherit}
+input,select,textarea,button{font-family:inherit;color:var(--text)}
+input,select,textarea{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:7px 10px;font-size:13px;width:100%;color:var(--text)}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#888}
+textarea{resize:vertical}
+button{cursor:pointer;border:1px solid var(--border);background:var(--bg2);border-radius:var(--r);padding:6px 14px;font-size:13px;color:var(--text2)}
+button:hover{background:var(--bg3)}
+.btn-icon{width:32px;height:32px;display:flex;align-items:center;justify-content:center;padding:0;font-size:16px;border-radius:var(--r)}
+
+/* Layout */
+.app{max-width:1100px;margin:0 auto;padding:12px}
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px}
+.topbar-title{font-size:16px;font-weight:600}
+.topbar-right{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+
+/* Nav tabs */
+.nav{display:flex;gap:4px;margin-bottom:14px;flex-wrap:wrap}
+.nav button{padding:6px 14px;border-radius:20px;font-size:13px;font-weight:500;border:1px solid var(--border);background:var(--card)}
+.nav button.active{background:var(--text);color:var(--bg);border-color:var(--text)}
+
+/* Cards row */
+.cards-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-bottom:12px}
+.acc-card{border-radius:var(--r2);padding:12px 14px;position:relative;overflow:hidden;min-height:80px;cursor:pointer;transition:transform 0.15s}
+.acc-card:hover{transform:translateY(-1px)}
+.acc-card-name{font-size:12px;font-weight:600;opacity:0.85;margin-bottom:4px}
+.acc-card-short{font-size:11px;opacity:0.6;margin-bottom:8px}
+.acc-card-amount{font-size:18px;font-weight:700;letter-spacing:-0.5px}
+.acc-card-currency{font-size:11px;opacity:0.7}
+.acc-card-warn{position:absolute;top:8px;right:8px;font-size:14px}
+
+/* Summary row */
+.summary-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px}
+.sum-box{background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:10px 14px;text-align:center}
+.sum-box-label{font-size:11px;color:var(--text3);margin-bottom:4px}
+.sum-box-val{font-size:17px;font-weight:700}
+
+/* Form panel */
+.form-wrap{background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:14px;margin-bottom:14px}
+.form-title{font-size:14px;font-weight:600;margin-bottom:12px}
+.type-row{display:flex;gap:6px;margin-bottom:10px}
+.type-btn{flex:1;padding:7px 4px;border-radius:var(--r);font-size:12px;font-weight:600;border:1px solid var(--border);background:var(--card);color:var(--text2)}
+.type-btn.k{background:var(--green-bg);color:var(--green);border-color:var(--green-bd)}
+.type-btn.c{background:var(--red-bg);color:var(--red);border-color:var(--red-bd)}
+.type-btn.o{background:var(--blue-bg);color:var(--blue);border-color:var(--blue-bd)}
+.field{margin-bottom:8px}
+.field label{display:block;font-size:11px;color:var(--text3);margin-bottom:3px;font-weight:500}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.field-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+@media(max-width:500px){.field-row,.field-row3{grid-template-columns:1fr}}
+.warn-bar{background:var(--red-bg);border:1px solid var(--red-bd);border-radius:var(--r);padding:7px 10px;font-size:12px;color:var(--red);margin-bottom:8px;display:none}
+.warn-bar.on{display:block}
+.btn-add{width:100%;padding:9px;font-size:14px;font-weight:600;background:var(--text);color:var(--bg);border:none;border-radius:var(--r);margin-top:4px}
+.btn-add:hover{opacity:0.88}
+.hide{display:none}
+
+/* Filters */
+.filter-bar{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;align-items:center}
+.filter-bar select{width:auto;min-width:100px;font-size:12px;padding:5px 8px}
+.filter-bar input[type=text]{width:auto;min-width:130px;font-size:12px;padding:5px 8px}
+
+/* Transaction list */
+.tx-list{background:var(--card);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden}
+.tx-item{display:flex;align-items:flex-start;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border2);gap:8px}
+.tx-item:last-child{border-bottom:none}
+.tx-item.editing{background:var(--bg2)}
+.tx-thumb{width:36px;height:36px;border-radius:6px;object-fit:cover;flex-shrink:0;border:1px solid var(--border2)}
+.tx-info{flex:1;min-width:0}
+.tx-cat{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tx-meta{font-size:11px;color:var(--text3);margin-top:1px}
+.tx-note-text{font-size:11px;color:var(--text2);margin-top:2px;font-style:italic}
+.tx-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0}
+.tx-amount{font-size:14px;font-weight:700}
+.tx-amount.k{color:var(--green)}
+.tx-amount.c{color:var(--red)}
+.tx-amount.o{color:var(--blue)}
+.tx-actions{display:flex;gap:3px}
+.tx-btn{font-size:11px;padding:2px 7px;border-radius:4px}
+.tx-btn.del:hover{background:var(--red-bg);color:var(--red);border-color:var(--red-bd)}
+.tx-btn.edt:hover{background:var(--blue-bg);color:var(--blue);border-color:var(--blue-bd)}
+.edit-form{padding:10px 14px;background:var(--bg2);border-bottom:1px solid var(--border2)}
+.edit-actions{display:flex;gap:6px;margin-top:8px}
+.btn-save{background:var(--green-bg);color:var(--green);border-color:var(--green-bd);font-weight:600}
+.btn-cancel{background:var(--card)}
+.empty-msg{padding:2rem;text-align:center;color:var(--text3);font-size:13px}
+
+/* Charts */
+.chart-section{background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:14px;margin-bottom:12px}
+.chart-section-title{font-size:13px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.chart-period-tabs{display:flex;gap:4px;margin-left:auto}
+.chart-period-tabs button{padding:3px 10px;font-size:11px;border-radius:12px}
+.chart-period-tabs button.active{background:var(--text);color:var(--bg);border-color:var(--text)}
+.bar-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.bar-lbl{font-size:12px;color:var(--text2);width:100px;text-align:right;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-track{flex:1;height:16px;background:var(--bg2);border-radius:4px;overflow:hidden;position:relative}
+.bar-fill{height:100%;border-radius:4px;transition:width 0.3s}
+.bar-val{font-size:11px;color:var(--text3);width:90px;text-align:right;flex-shrink:0}
+
+/* Pulse/line chart */
+.pulse-svg{width:100%;height:80px}
+
+/* Comparison */
+.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:480px){.compare-grid{grid-template-columns:1fr}}
+
+/* Budget */
+.budget-item{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.budget-lbl{width:110px;font-size:12px;color:var(--text2);flex-shrink:0}
+.budget-track{flex:1;height:14px;background:var(--bg2);border-radius:4px;overflow:hidden}
+.budget-fill{height:100%;border-radius:4px;transition:width 0.3s}
+.budget-val{font-size:11px;color:var(--text3);width:80px;text-align:right}
+
+/* Settings */
+.settings-section{background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:14px;margin-bottom:12px}
+.settings-title{font-size:13px;font-weight:600;margin-bottom:12px;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em}
+.setting-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border2)}
+.setting-row:last-child{border-bottom:none}
+.setting-label{font-size:13px}
+.setting-sub{font-size:11px;color:var(--text3)}
+.toggle{width:40px;height:22px;border-radius:11px;border:none;position:relative;cursor:pointer;transition:background 0.2s;background:var(--bg3)}
+.toggle.on{background:#3B6D11}
+.toggle::after{content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left 0.2s}
+.toggle.on::after{left:21px}
+.acc-list-item{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border2)}
+.acc-list-item:last-child{border-bottom:none}
+.color-dot{width:20px;height:20px;border-radius:50%;flex-shrink:0;border:1px solid var(--border)}
+.acc-list-name{flex:1;font-size:13px}
+.acc-list-bal{font-size:12px;color:var(--text3);font-family:monospace}
+.color-picker-wrap{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.color-swatch{width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:border-color 0.15s}
+.color-swatch.sel{border-color:var(--text)}
+.color-swatch-custom{width:22px;height:22px;border-radius:50%;border:1px solid var(--border);overflow:hidden;cursor:pointer}
+.color-swatch-custom input[type=color]{width:30px;height:30px;border:none;padding:0;margin:-4px;cursor:pointer;background:none}
+
+/* Recurring */
+.recur-item{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border2)}
+.recur-item:last-child{border-bottom:none}
+.recur-info{flex:1}
+.recur-name{font-size:13px;font-weight:500}
+.recur-meta{font-size:11px;color:var(--text3);margin-top:1px}
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:500}
+.badge-warn{background:#FFF3CD;color:#856404;border:1px solid #FFCA2C}
+.badge-ok{background:var(--green-bg);color:var(--green);border:1px solid var(--green-bd)}
+
+/* Modal */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;align-items:center;justify-content:center}
+.modal-bg.on{display:flex}
+.modal{background:var(--card);border-radius:var(--r2);padding:20px;width:340px;max-width:95vw;max-height:90vh;overflow-y:auto}
+.modal-title{font-size:15px;font-weight:600;margin-bottom:14px}
+.modal-btns{display:flex;gap:8px;margin-top:14px}
+.modal-btns button{flex:1}
+.btn-primary{background:var(--text);color:var(--bg);border-color:var(--text);font-weight:600}
+.btn-primary:hover{opacity:0.85}
+.btn-danger{background:var(--red-bg);color:var(--red);border-color:var(--red-bd)}
+
+/* Misc */
+.section-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text3);margin-bottom:8px;margin-top:4px}
+.flex-between{display:flex;align-items:center;justify-content:space-between}
+.flex-gap{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.chip{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;border:1px solid var(--border);background:var(--bg2);cursor:pointer}
+.chip:hover{background:var(--bg3)}
+.chip.on{background:var(--text);color:var(--bg);border-color:var(--text)}
+.img-upload-btn{display:flex;align-items:center;gap:6px;padding:6px 12px;font-size:12px;cursor:pointer;border:1px dashed var(--border);border-radius:var(--r);color:var(--text3);background:var(--bg2)}
+.img-upload-btn:hover{background:var(--bg3)}
+img.tx-img{max-width:100%;border-radius:6px;margin-top:4px;border:1px solid var(--border2)}
+.predict-item{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border2);font-size:13px}
+.predict-item:last-child{border-bottom:none}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <span class="topbar-title" id="app-title">💰 Moliya</span>
+  <div class="topbar-right">
+    <span id="sync-status" style="font-size:12px;color:var(--text3);cursor:pointer" onclick="loadFromCloud().then(l=>{if(l){lang=state.settings.lang||'uz';applyDark();fillCurrencySelects();fillAccountSelects();fillCatSelect();applyLang();renderAll();}})">☁️ Bulut</span>
+    <button class="btn-icon" onclick="toggleDark()" id="dark-btn" title="Kun/Tun">🌙</button>
+    <button onclick="exportJSON()" style="font-size:12px">JSON</button>
+    <button onclick="exportCSV()" style="font-size:12px">CSV</button>
+    <button onclick="setLang('uz')" id="btn-uz" class="chip on">UZ</button>
+    <button onclick="setLang('ru')" id="btn-ru" class="chip">RU</button>
+  </div>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+  <button class="active" onclick="showPage('main')" id="nav-main" data-uz="Asosiy" data-ru="Главная">Asosiy</button>
+  <button onclick="showPage('tarix')" id="nav-tarix" data-uz="Tarix" data-ru="История">Tarix</button>
+  <button onclick="showPage('grafik')" id="nav-grafik" data-uz="Grafik" data-ru="График">Grafik</button>
+  <button onclick="showPage('budjet')" id="nav-budjet" data-uz="Budjet" data-ru="Бюджет">Budjet</button>
+  <button onclick="showPage('sozlama')" id="nav-sozlama" data-uz="Sozlama" data-ru="Настройки">Sozlama</button>
+</div>
+
+<!-- ACCOUNTS ROW -->
+<div class="cards-row" id="cards-row"></div>
+<div class="summary-row" id="summary-row"></div>
+
+<!-- RECURRING ALERTS -->
+<div id="recur-alerts"></div>
+
+<!-- ======= MAIN PAGE ======= -->
+<div id="page-main">
+<div class="form-wrap">
+  <div class="form-title" id="form-title">➕ Tranzaksiya</div>
+  <div class="type-row">
+    <button class="type-btn k" onclick="setType('kirim')" id="tb-k">+ Kirim</button>
+    <button class="type-btn" onclick="setType('chiqim')" id="tb-c">− Chiqim</button>
+    <button class="type-btn" onclick="setType('otkazma')" id="tb-o">⇄ O'tkazma</button>
+  </div>
+  <div class="field-row">
+    <div class="field">
+      <label id="lbl-amount">Miqdor</label>
+      <div style="display:flex;gap:4px">
+        <input type="number" id="amount" placeholder="0" min="0" oninput="checkWarn()" style="flex:1">
+        <select id="currency-sel" style="width:70px;padding:7px 4px;font-size:12px" onchange="saveCurrencyPref()"></select>
+      </div>
+    </div>
+    <div class="field" id="field-cat">
+      <label id="lbl-cat">Kategoriya</label>
+      <select id="cat"></select>
+    </div>
+  </div>
+  <div class="field" id="field-karta">
+    <label id="lbl-karta">Hisob</label>
+    <select id="karta" onchange="checkWarn()"></select>
+  </div>
+  <div id="otkazma-fields" class="hide">
+    <div class="field-row">
+      <div class="field"><label id="lbl-from">Dan</label><select id="karta-from" onchange="checkWarn()"></select></div>
+      <div class="field"><label id="lbl-to">Ga</label><select id="karta-to"></select></div>
+    </div>
+  </div>
+  <div class="field-row">
+    <div class="field">
+      <label id="lbl-date">Sana</label>
+      <input type="datetime-local" id="tx-dt">
+    </div>
+    <div class="field">
+      <label id="lbl-note">Izoh</label>
+      <input type="text" id="note" placeholder="...">
+    </div>
+  </div>
+  <div class="field">
+    <label>Rasm (chek / mahsulot, max 10MB)</label>
+    <label class="img-upload-btn">
+      📎 <span id="img-lbl">Rasm tanlash</span>
+      <input type="file" accept="image/*" id="img-input" style="display:none" onchange="handleImg(this)">
+    </label>
+    <img id="img-preview" style="display:none;max-height:100px;margin-top:6px;border-radius:6px;border:1px solid var(--border2)">
+  </div>
+  <div class="warn-bar" id="warn-bar">⚠</div>
+  <button class="btn-add" onclick="addTx()" id="add-btn">+ Qo'shish</button>
+</div>
+</div>
+
+<!-- ======= TARIX PAGE ======= -->
+<div id="page-tarix" class="hide">
+<div class="filter-bar">
+  <input type="text" id="search-q" placeholder="🔍 Qidiruv..." oninput="renderTarix()" style="min-width:140px;max-width:200px">
+  <select id="f-type" onchange="renderTarix()"><option value="">Hammasi</option></select>
+  <select id="f-karta" onchange="renderTarix()"><option value="">Barcha hisoblar</option></select>
+  <select id="f-month" onchange="renderTarix()"><option value="">Barcha oylar</option></select>
+  <select id="f-cat" onchange="renderTarix()"><option value="">Barcha kategoriyalar</option></select>
+  <button onclick="exportPDF()" style="font-size:12px">PDF</button>
+</div>
+<div class="tx-list" id="tx-list"></div>
+</div>
+
+<!-- ======= GRAFIK PAGE ======= -->
+<div id="page-grafik" class="hide">
+  <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;align-items:center">
+    <select id="g-karta" onchange="renderGrafik()" style="width:auto;font-size:12px"><option value="">Barcha hisoblar</option></select>
+    <div class="flex-gap" id="g-period-tabs">
+      <button class="chip on" onclick="setPeriod('week')" id="gp-week">Hafta</button>
+      <button class="chip" onclick="setPeriod('month')" id="gp-month">Oy</button>
+      <button class="chip" onclick="setPeriod('year')" id="gp-year">Yil</button>
+    </div>
+  </div>
+  <div id="grafik-wrap"></div>
+</div>
+
+<!-- ======= BUDJET PAGE ======= -->
+<div id="page-budjet" class="hide">
+  <div class="chart-section">
+    <div class="chart-section-title">📅 Budjet rejalashtirish</div>
+    <div id="budget-cats"></div>
+    <div style="margin-top:10px;font-size:12px;color:var(--text3)" id="budget-hint"></div>
+  </div>
+  <div class="chart-section">
+    <div class="chart-section-title">🔮 Bashorat (kelasi oy)</div>
+    <div id="predict-wrap"></div>
+  </div>
+  <div class="chart-section">
+    <div class="chart-section-title">📊 Solishtirish (oy/yil)</div>
+    <div id="compare-wrap"></div>
+  </div>
+</div>
+
+<!-- ======= SOZLAMA PAGE ======= -->
+<div id="page-sozlama" class="hide">
+
+<!-- Dark mode -->
+<div class="settings-section">
+  <div class="settings-title" id="st-display">Ko'rinish</div>
+  <div class="setting-row">
+    <div><div class="setting-label" id="sl-dark">Tungi rejim</div></div>
+    <button class="toggle" id="dark-toggle" onclick="toggleDark()"></button>
+  </div>
+  <div class="setting-row">
+    <div>
+      <div class="setting-label" id="sl-currency">Asosiy valyuta</div>
+      <div class="setting-sub" id="sl-currency-sub">Har safar so'ramasin</div>
+    </div>
+    <select id="default-currency" style="width:100px;font-size:12px" onchange="saveSettings()"></select>
+  </div>
+</div>
+
+<!-- Accounts management -->
+<div class="settings-section">
+  <div class="settings-title flex-between">
+    <span id="st-accounts">Hisoblar</span>
+    <button onclick="openAddAccount()" style="font-size:12px">+ Qo'shish</button>
+  </div>
+  <div id="acc-manage-list"></div>
+</div>
+
+<!-- Categories -->
+<div class="settings-section">
+  <div class="settings-title flex-between">
+    <span id="st-cats">Kategoriyalar</span>
+    <button onclick="openAddCat()" style="font-size:12px">+ Qo'shish</button>
+  </div>
+  <div id="cat-manage"></div>
+</div>
+
+<!-- Recurring -->
+<div class="settings-section">
+  <div class="settings-title flex-between">
+    <span id="st-recur">Takroriy to'lovlar</span>
+    <button onclick="openAddRecur()" style="font-size:12px">+ Qo'shish</button>
+  </div>
+  <div id="recur-manage"></div>
+</div>
+
+<!-- Data -->
+<div class="settings-section">
+  <div class="settings-title" id="st-data">Ma'lumotlar</div>
+  <div class="setting-row">
+    <div class="setting-label" id="sl-export">Eksport</div>
+    <div style="display:flex;gap:6px">
+      <button onclick="exportJSON()" style="font-size:12px">JSON</button>
+      <button onclick="exportCSV()" style="font-size:12px">CSV</button>
+      <button onclick="exportPDF()" style="font-size:12px">PDF</button>
+    </div>
+  </div>
+  <div class="setting-row">
+    <div class="setting-label" id="sl-import">Import JSON</div>
+    <label style="cursor:pointer">
+      <button onclick="this.parentElement.querySelector('input').click()" style="font-size:12px">📂 Yuklash</button>
+      <input type="file" accept=".json" style="display:none" onchange="importJSON(this)">
+    </label>
+  </div>
+  <div class="setting-row">
+    <div class="setting-label" style="color:var(--red)" id="sl-clear">Hammasini o'chirish</div>
+    <button onclick="clearAll()" style="font-size:12px;color:var(--red)">🗑 O'chirish</button>
+  </div>
+</div>
+
+</div><!-- end sozlama -->
+
+</div><!-- end app -->
+
+<!-- MODALS -->
+<div class="modal-bg" id="modal-acc" onclick="if(event.target===this)closeModal('modal-acc')">
+  <div class="modal">
+    <div class="modal-title" id="macc-title">Hisob qo'shish</div>
+    <div class="field"><label>Nomi</label><input type="text" id="macc-name" placeholder="Maosh kartasi"></div>
+    <div class="field"><label>Qisqa (raqamlar / belgi)</label><input type="text" id="macc-short" placeholder="...1234"></div>
+    <div class="field"><label>Boshlang'ich balans</label><input type="number" id="macc-init" placeholder="0"></div>
+    <div class="field">
+      <label>Rang</label>
+      <div class="color-picker-wrap" id="macc-colors"></div>
+    </div>
+    <input type="hidden" id="macc-id">
+    <div class="modal-btns">
+      <button onclick="closeModal('modal-acc')" id="macc-cancel">Bekor</button>
+      <button class="btn-primary" onclick="saveAccount()" id="macc-save">Saqlash</button>
+      <button class="btn-danger" id="macc-del-btn" onclick="deleteAccount()" style="display:none">O'chirish</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal-cat" onclick="if(event.target===this)closeModal('modal-cat')">
+  <div class="modal">
+    <div class="modal-title" id="mcat-title">Kategoriya</div>
+    <div class="field"><label id="mcat-type-lbl">Turi</label>
+      <select id="mcat-type"><option value="chiqim">Chiqim</option><option value="kirim">Kirim</option></select>
+    </div>
+    <div class="field"><label>Nomi</label><input type="text" id="mcat-name" placeholder="Kategoriya nomi"></div>
+    <input type="hidden" id="mcat-idx">
+    <div class="modal-btns">
+      <button onclick="closeModal('modal-cat')" id="mcat-cancel">Bekor</button>
+      <button class="btn-primary" onclick="saveCat()" id="mcat-save">Saqlash</button>
+      <button class="btn-danger" id="mcat-del" onclick="deleteCat()" style="display:none">O'chirish</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal-recur" onclick="if(event.target===this)closeModal('modal-recur')">
+  <div class="modal">
+    <div class="modal-title" id="mrec-title">Takroriy to'lov</div>
+    <div class="field"><label>Nomi</label><input type="text" id="mrec-name" placeholder="Internet to'lovi"></div>
+    <div class="field"><label>Miqdor</label><input type="number" id="mrec-amount" placeholder="0"></div>
+    <div class="field"><label>Hisob</label><select id="mrec-karta"></select></div>
+    <div class="field"><label>Kategoriya</label><select id="mrec-cat"></select></div>
+    <div class="field"><label>Har (kun)</label><input type="number" id="mrec-days" placeholder="30" value="30"></div>
+    <div class="field"><label>Keyingi sana</label><input type="date" id="mrec-next"></div>
+    <input type="hidden" id="mrec-idx">
+    <div class="modal-btns">
+      <button onclick="closeModal('modal-recur')" id="mrec-cancel">Bekor</button>
+      <button class="btn-primary" onclick="saveRecur()" id="mrec-save">Saqlash</button>
+      <button class="btn-danger" id="mrec-del" onclick="deleteRecur()" style="display:none">O'chirish</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+const PALETTE=['#378ADD','#1D9E75','#D85A30','#D4537E','#888780','#639922','#BA7517','#7C4DFF','#E65100','#00838F'];
+
+let state={
+  accounts:[
+    {id:'c1',name:'IY Visa',short:'...3086',color:'#378ADD',init:0},
+    {id:'c2',name:'U Visa',short:'...2220',color:'#1D9E75',init:0},
+    {id:'c3',name:'MB Uzcard',short:'...8826',color:'#D85A30',init:0},
+    {id:'c4',name:'HB Humo',short:'...3470',color:'#D4537E',init:0},
+    {id:'c5',name:'Naqd',short:'💵',color:'#888780',init:0}
+  ],
+  txs:[],
+  cats:{
+    kirim:['Maosh','Biznes','Boshqa kirim'],
+    chiqim:['Oziq-ovqat','Transport','Kommunal','Kiyim',"Sog'liq","Ta'lim",'Shaxsiy','Boshqa']
+  },
+  recurring:[],
+  settings:{dark:false,currency:'UZS',lang:'uz'}
+};
+
+const CURRENCIES=['UZS','USD','EUR','RUB'];
+const CURRSYM={UZS:"so'm",USD:'$',EUR:'€',RUB:'₽'};
+
+let lang='uz', txType='kirim', editingIdx=-1, activePage='main', gPeriod='month';
+let pendingImg=null; // base64
+
+const L=()=>({
+  uz:{
+    appTitle:'💰 Moliya',
+    formTitle:'➕ Tranzaksiya qo\'shish',
+    kirim:'+ Kirim',chiqim:'− Chiqim',otkazma:'⇄ O\'tkazma',
+    amount:'Miqdor',karta:'Hisob',from:'Dan',to:'Ga',
+    cat:'Kategoriya',note:'Izoh',date:'Sana',
+    addBtn:'+ Qo\'shish',
+    totalKirim:'Kirim',totalChiqim:'Chiqim',balans:'Balans',
+    empty:'Yozuvlar yo\'q',
+    del:"O'ch",edt:'Taxr',save:'Saqlash',cancel:'Bekor',
+    typeLabels:{kirim:'Kirim',chiqim:'Chiqim',otkazma:"O'tkazma"},
+    allTypes:'Hammasi',allAccounts:'Barcha hisoblar',allMonths:'Barcha oylar',allCats:'Barcha kategoriyalar',
+    warnInsuf:'⚠ Balans yetarli emas!',
+    confirmDel:'O\'chirishni tasdiqlaysizmi?',
+    confirmClear:'HAMMA ma\'lumotni o\'chirasizmi? Bu qaytarib bo\'lmaydi!',
+    imgLbl:'Rasm tanlash',imgSel:'✅ Tanlandi',
+    weekLabel:'Hafta',monthLabel:'Oy',yearLabel:'Yil',
+    budgetTitle:'Budjet',predictTitle:'Bashorat',compareTitle:'Solishtirish',
+    budgetHint:'Har kategoriya uchun oylik limit kiriting',
+    noData:'Ma\'lumot yo\'q',
+    recurDue:'To\'lov yaqinlashdi',
+    recurOverdue:'Muddati o\'tdi',
+    forecast:'Taxminiy chiqim (kelasi oy)',
+    forecastNote:'O\'tgan 3 oy o\'rtacha asosida',
+  },
+  ru:{
+    appTitle:'💰 Финансы',
+    formTitle:'➕ Добавить',
+    kirim:'+ Приход',chiqim:'− Расход',otkazma:'⇄ Перевод',
+    amount:'Сумма',karta:'Счёт',from:'Откуда',to:'Куда',
+    cat:'Категория',note:'Комментарий',date:'Дата',
+    addBtn:'+ Добавить',
+    totalKirim:'Доход',totalChiqim:'Расход',balans:'Баланс',
+    empty:'Нет записей',
+    del:'Уд.',edt:'Ред.',save:'Сохранить',cancel:'Отмена',
+    typeLabels:{kirim:'Приход',chiqim:'Расход',otkazma:'Перевод'},
+    allTypes:'Все',allAccounts:'Все счета',allMonths:'Все месяцы',allCats:'Все категории',
+    warnInsuf:'⚠ Недостаточно средств!',
+    confirmDel:'Удалить запись?',
+    confirmClear:'Удалить ВСЕ данные? Это необратимо!',
+    imgLbl:'Выбрать фото',imgSel:'✅ Выбрано',
+    weekLabel:'Неделя',monthLabel:'Месяц',yearLabel:'Год',
+    budgetTitle:'Бюджет',predictTitle:'Прогноз',compareTitle:'Сравнение',
+    budgetHint:'Задайте лимиты по категориям на месяц',
+    noData:'Нет данных',
+    recurDue:'Платёж приближается',
+    recurOverdue:'Просрочено',
+    forecast:'Прогноз расхода (след. месяц)',
+    forecastNote:'На основе среднего за 3 месяца',
+  }
+})[lang];
+
+// ============================================================
+// UTILS
+// ============================================================
+function uid(){return 'a'+Math.random().toString(36).slice(2,10)}
+function fmt(n,cur){cur=cur||state.settings.currency;const sym=CURRSYM[cur]||cur;return Math.round(n).toLocaleString('uz-UZ')+' '+sym;}
+function fmtDate(iso){if(!iso)return '';const[y,m,d]=iso.split('T')[0].split('-');return d+'.'+m+'.'+y;}
+function fmtDT(iso){if(!iso)return '';const d=new Date(iso);return d.toLocaleDateString('uz-UZ')+' '+d.toLocaleTimeString('uz-UZ',{hour:'2-digit',minute:'2-digit'});}
+function todayISO(){return new Date().toISOString().slice(0,16);}
+function monthKey(iso){return iso?iso.slice(0,7):'';}
+function monthLabel(iso){if(!iso)return '';const d=new Date(iso+'T00:00:00');return d.toLocaleString(lang==='uz'?'uz-UZ':'ru-RU',{month:'long',year:'numeric'});}
+function getAcc(id){return state.accounts.find(a=>a.id===id)||{name:'?',color:'#888',short:''};}
+function getBalances(){
+  const b={};
+  state.accounts.forEach(a=>b[a.id]=a.init||0);
+  state.txs.forEach(t=>{
+    if(t.type==='kirim')b[t.karta]=(b[t.karta]||0)+t.amount;
+    else if(t.type==='chiqim')b[t.karta]=(b[t.karta]||0)-t.amount;
+    else if(t.type==='otkazma'){b[t.from]=(b[t.from]||0)-t.amount;b[t.to]=(b[t.to]||0)+t.amount;}
+  });
+  return b;
+}
+
+// ============================================================
+// PERSIST
+// ============================================================
+// ============================================================
+// GOOGLE SHEETS SYNC
+// ============================================================
+const SHEET_URL = 'https://script.google.com/macros/s/AKfycbwah9N5OdnM0GYiu2FN29ICCq7ADonDwkt3EuHYP30Tv-hnYh_Ghw7sIVkkfxz-w7Jq/exec';
+let syncStatus = 'idle'; // idle | saving | loading | ok | error
+let syncTimeout = null;
+
+function setSyncStatus(s, msg){
+  syncStatus = s;
+  const el = document.getElementById('sync-status');
+  if(!el) return;
+  const icons = {idle:'☁️', saving:'⏳', loading:'⏳', ok:'✅', error:'❌'};
+  const msgs = {
+    idle: lang==='uz' ? '☁️ Bulut' : '☁️ Облако',
+    saving: lang==='uz' ? '⏳ Saqlanmoqda...' : '⏳ Сохранение...',
+    loading: lang==='uz' ? '⏳ Yuklanmoqda...' : '⏳ Загрузка...',
+    ok: lang==='uz' ? '✅ Saqlandi' : '✅ Сохранено',
+    error: lang==='uz' ? '❌ Xato: '+msg : '❌ Ошибка: '+msg
+  };
+  el.textContent = msgs[s] || s;
+  el.style.color = s==='ok'?'var(--green)':s==='error'?'var(--red)':'var(--text3)';
+}
+
+function save(){
+  // 1. Always save to localStorage as backup
+  try{localStorage.setItem('mol3_state', JSON.stringify(state));}catch(e){}
+  // 2. Debounce cloud save - wait 1.5s after last change
+  clearTimeout(syncTimeout);
+  setSyncStatus('saving');
+  syncTimeout = setTimeout(()=>saveToCloud(), 1500);
+}
+
+async function saveToCloud(){
+  try{
+    setSyncStatus('saving');
+    const resp = await fetch(SHEET_URL, {
+      method: 'POST',
+      body: JSON.stringify(state),
+      headers: {'Content-Type': 'text/plain'}
+    });
+    const text = await resp.text();
+    if(text.includes('OK') || resp.ok){
+      setSyncStatus('ok');
+      setTimeout(()=>setSyncStatus('idle'), 3000);
+    } else {
+      setSyncStatus('error', text.slice(0,30));
+    }
+  } catch(e){
+    setSyncStatus('error', e.message.slice(0,30));
+  }
+}
+
+async function loadFromCloud(){
+  setSyncStatus('loading');
+  try{
+    const resp = await fetch(SHEET_URL + '?t=' + Date.now());
+    const text = await resp.text();
+    if(text && text !== '{}' && text.trim().startsWith('{')){
+      const p = JSON.parse(text);
+      if(p.txs && p.txs.length > 0){
+        if(p.accounts)state.accounts=p.accounts;
+        if(p.txs)state.txs=p.txs;
+        if(p.cats)state.cats=p.cats;
+        if(p.recurring)state.recurring=p.recurring;
+        if(p.settings)state.settings={...state.settings,...p.settings};
+        if(!state.settings.budgets)state.settings.budgets={};
+        // Also update localStorage
+        try{localStorage.setItem('mol3_state', JSON.stringify(state));}catch(e){}
+        setSyncStatus('ok');
+        setTimeout(()=>setSyncStatus('idle'), 2000);
+        return true;
+      }
+    }
+    setSyncStatus('idle');
+    return false;
+  } catch(e){
+    setSyncStatus('error', e.message.slice(0,20));
+    return false;
+  }
+}
+
+function load(){
+  // Load from localStorage first (fast)
+  try{
+    const d=localStorage.getItem('mol3_state');
+    if(d){
+      const p=JSON.parse(d);
+      if(p.accounts)state.accounts=p.accounts;
+      if(p.txs)state.txs=p.txs;
+      if(p.cats)state.cats=p.cats;
+      if(p.recurring)state.recurring=p.recurring;
+      if(p.settings)state.settings={...state.settings,...p.settings};
+      if(!state.settings.budgets)state.settings.budgets={};
+    }
+  }catch(e){}
+  // Then try to load from cloud (async - updates if newer data found)
+  loadFromCloud().then(loaded => {
+    if(loaded){
+      lang=state.settings.lang||'uz';
+      applyDark();
+      fillCurrencySelects();
+      fillAccountSelects();
+      fillCatSelect();
+      applyLang();
+      renderAll();
+    }
+  });
+}
+
+// ============================================================
+// DARK MODE
+// ============================================================
+function applyDark(){
+  document.body.classList.toggle('dark',!!state.settings.dark);
+  const btn=document.getElementById('dark-btn');
+  if(btn)btn.textContent=state.settings.dark?'☀️':'🌙';
+  const tgl=document.getElementById('dark-toggle');
+  if(tgl)tgl.className='toggle'+(state.settings.dark?' on':'');
+}
+function toggleDark(){state.settings.dark=!state.settings.dark;save();applyDark();}
+
+// ============================================================
+// LANG
+// ============================================================
+function setLang(l){
+  lang=l;state.settings.lang=l;save();
+  document.getElementById('btn-uz').className='chip'+(l==='uz'?' on':'');
+  document.getElementById('btn-ru').className='chip'+(l==='ru'?' on':'');
+  applyLang();renderAll();
+}
+function applyLang(){
+  const l=L();
+  document.getElementById('app-title').textContent=l.appTitle;
+  document.getElementById('form-title').textContent=l.formTitle;
+  document.getElementById('tb-k').textContent=l.kirim;
+  document.getElementById('tb-c').textContent=l.chiqim;
+  document.getElementById('tb-o').textContent=l.otkazma;
+  document.getElementById('lbl-amount').textContent=l.amount;
+  document.getElementById('lbl-karta').textContent=l.karta;
+  document.getElementById('lbl-from').textContent=l.from;
+  document.getElementById('lbl-to').textContent=l.to;
+  document.getElementById('lbl-cat').textContent=l.cat;
+  document.getElementById('lbl-note').textContent=l.note;
+  document.getElementById('lbl-date').textContent=l.date;
+  document.getElementById('add-btn').textContent=l.addBtn;
+  // nav
+  document.querySelectorAll('.nav button[data-uz]').forEach(b=>{b.textContent=b.getAttribute('data-'+lang)||b.textContent;});
+  fillAccountSelects();fillCatSelect();fillCurrencySelects();
+}
+
+// ============================================================
+// PAGES
+// ============================================================
+function showPage(p){
+  activePage=p;
+  ['main','tarix','grafik','budjet','sozlama'].forEach(x=>{
+    document.getElementById('page-'+x).className=(x===p)?'':'hide';
+    const nb=document.getElementById('nav-'+x);
+    if(nb)nb.className=x===p?'active':'';
+  });
+  if(p==='tarix')renderTarix();
+  else if(p==='grafik')renderGrafik();
+  else if(p==='budjet')renderBudjet();
+  else if(p==='sozlama')renderSozlama();
+}
+
+// ============================================================
+// CURRENCY
+// ============================================================
+function fillCurrencySelects(){
+  ['currency-sel','default-currency'].forEach(id=>{
+    const el=document.getElementById(id);if(!el)return;
+    const cur=el.value||state.settings.currency;
+    el.innerHTML=CURRENCIES.map(c=>`<option value="${c}"${c===cur?' selected':''}>${c}</option>`).join('');
+  });
+}
+function saveCurrencyPref(){
+  state.settings.currency=document.getElementById('currency-sel').value;
+  document.getElementById('default-currency').value=state.settings.currency;
+  save();renderAll();
+}
+function saveSettings(){
+  state.settings.currency=document.getElementById('default-currency').value;
+  document.getElementById('currency-sel').value=state.settings.currency;
+  save();renderAll();
+}
+
+// ============================================================
+// ACCOUNTS
+// ============================================================
+function fillAccountSelects(){
+  ['karta','karta-from','karta-to','f-karta','mrec-karta','g-karta'].forEach(id=>{
+    const el=document.getElementById(id);if(!el)return;
+    const isFilter=id.startsWith('f-')||id==='g-karta';
+    const prev=el.value;
+    el.innerHTML='';
+    if(isFilter){const o=document.createElement('option');o.value='';o.textContent=L().allAccounts;el.appendChild(o);}
+    state.accounts.forEach(a=>{
+      const o=document.createElement('option');o.value=a.id;o.textContent=a.name+' ('+a.short+')';el.appendChild(o);
+    });
+    if(prev)el.value=prev;
+  });
+}
+
+function renderAccountCards(){
+  const b=getBalances();
+  document.getElementById('cards-row').innerHTML=state.accounts.map(a=>{
+    const bal=b[a.id]||0;
+    const warn=bal<0?'⚠':'';
+    const textCol=isLight(a.color)?'#1a1a1a':'#fff';
+    return `<div class="acc-card" style="background:${a.color};color:${textCol}" onclick="openEditAccount('${a.id}')">
+      <div class="acc-card-name">${a.name}</div>
+      <div class="acc-card-short">${a.short}</div>
+      <div class="acc-card-amount" style="color:${bal<0?'#ffcccc':textCol}">${fmt(bal)}</div>
+      ${warn?`<div class="acc-card-warn">${warn}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function isLight(hex){
+  const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+  return (r*299+g*587+b*114)/1000>160;
+}
+
+function openAddAccount(){
+  document.getElementById('macc-title').textContent=lang==='uz'?"Hisob qo'shish":'Добавить счёт';
+  document.getElementById('macc-name').value='';
+  document.getElementById('macc-short').value='';
+  document.getElementById('macc-init').value='0';
+  document.getElementById('macc-id').value='';
+  document.getElementById('macc-del-btn').style.display='none';
+  renderColorPicker('macc-colors',PALETTE[0],c=>selectedAccColor=c);
+  selectedAccColor=PALETTE[0];
+  openModal('modal-acc');
+}
+let selectedAccColor=PALETTE[0];
+
+function openEditAccount(id){
+  const a=getAcc(id);
+  document.getElementById('macc-title').textContent=lang==='uz'?'Hisobni tahrirlash':'Редактировать счёт';
+  document.getElementById('macc-name').value=a.name;
+  document.getElementById('macc-short').value=a.short;
+  document.getElementById('macc-init').value=a.init||0;
+  document.getElementById('macc-id').value=id;
+  document.getElementById('macc-del-btn').style.display=state.accounts.length>1?'block':'none';
+  selectedAccColor=a.color;
+  renderColorPicker('macc-colors',a.color,c=>selectedAccColor=c);
+  openModal('modal-acc');
+}
+
+function renderColorPicker(containerId,selected,onChange){
+  const el=document.getElementById(containerId);
+  el.innerHTML=PALETTE.map(c=>`<div class="color-swatch${c===selected?' sel':''}" style="background:${c}" onclick="selectColor('${containerId}','${c}')"></div>`).join('')
+    +`<label class="color-swatch-custom" title="Maxsus rang"><input type="color" value="${selected}" oninput="customColor('${containerId}',this.value)"></label>`;
+}
+function selectColor(containerId,color){
+  selectedAccColor=color;
+  document.querySelectorAll(`#${containerId} .color-swatch`).forEach(s=>s.className='color-swatch'+(s.style.background===color||rgbToHex(s.style.background)===color?' sel':''));
+}
+function customColor(containerId,color){
+  selectedAccColor=color;
+  document.querySelectorAll(`#${containerId} .color-swatch`).forEach(s=>s.className='color-swatch');
+}
+function rgbToHex(rgb){
+  const m=rgb.match(/\d+/g);if(!m)return rgb;
+  return '#'+m.slice(0,3).map(x=>parseInt(x).toString(16).padStart(2,'0')).join('');
+}
+
+function saveAccount(){
+  const name=document.getElementById('macc-name').value.trim();
+  if(!name)return;
+  const short=document.getElementById('macc-short').value.trim()||name.slice(0,4);
+  const init=parseFloat(document.getElementById('macc-init').value)||0;
+  const id=document.getElementById('macc-id').value;
+  if(id){
+    const a=state.accounts.find(x=>x.id===id);
+    if(a){a.name=name;a.short=short;a.init=init;a.color=selectedAccColor;}
+  } else {
+    state.accounts.push({id:uid(),name,short,color:selectedAccColor,init});
+  }
+  save();closeModal('modal-acc');renderAll();fillAccountSelects();
+}
+
+function deleteAccount(){
+  const id=document.getElementById('macc-id').value;
+  if(!id)return;
+  if(!confirm(lang==='uz'?"Hisobni o'chirasizmi? Barcha tranzaksiyalar saqlanadi.":'Удалить счёт?'))return;
+  state.accounts=state.accounts.filter(a=>a.id!==id);
+  save();closeModal('modal-acc');renderAll();fillAccountSelects();
+}
+
+// ============================================================
+// CATEGORIES
+// ============================================================
+function fillCatSelect(){
+  const el=document.getElementById('cat');el.innerHTML='';
+  const cats=txType==='otkazma'?[]:(state.cats[txType]||[]);
+  cats.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;el.appendChild(o);});
+  // recur cat
+  const rc=document.getElementById('mrec-cat');
+  if(rc){rc.innerHTML='';state.cats.chiqim.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;rc.appendChild(o);});}
+  // filter cat
+  const fc=document.getElementById('f-cat');
+  if(fc){
+    const prev=fc.value;
+    fc.innerHTML=`<option value="">${L().allCats}</option>`;
+    [...state.cats.kirim,...state.cats.chiqim].forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;fc.appendChild(o);});
+    if(prev)fc.value=prev;
+  }
+}
+
+function openAddCat(){
+  document.getElementById('mcat-title').textContent=lang==='uz'?"Kategoriya qo'shish":'Добавить категорию';
+  document.getElementById('mcat-name').value='';
+  document.getElementById('mcat-idx').value='';
+  document.getElementById('mcat-del').style.display='none';
+  openModal('modal-cat');
+}
+function openEditCat(type,idx){
+  document.getElementById('mcat-title').textContent=lang==='uz'?'Kategoriyani tahrirlash':'Редактировать категорию';
+  document.getElementById('mcat-type').value=type;
+  document.getElementById('mcat-name').value=state.cats[type][idx];
+  document.getElementById('mcat-idx').value=type+'|'+idx;
+  document.getElementById('mcat-del').style.display='block';
+  openModal('modal-cat');
+}
+function saveCat(){
+  const name=document.getElementById('mcat-name').value.trim();if(!name)return;
+  const type=document.getElementById('mcat-type').value;
+  const raw=document.getElementById('mcat-idx').value;
+  if(raw){const[t,i]=raw.split('|');state.cats[t][parseInt(i)]=name;}
+  else state.cats[type].push(name);
+  save();closeModal('modal-cat');fillCatSelect();renderSozlama();
+}
+function deleteCat(){
+  const raw=document.getElementById('mcat-idx').value;if(!raw)return;
+  const[t,i]=raw.split('|');state.cats[t].splice(parseInt(i),1);
+  save();closeModal('modal-cat');fillCatSelect();renderSozlama();
+}
+
+// ============================================================
+// RECURRING
+// ============================================================
+function openAddRecur(){
+  document.getElementById('mrec-title').textContent=lang==='uz'?"Takroriy to'lov qo'shish":'Добавить повторяющийся платёж';
+  document.getElementById('mrec-name').value='';
+  document.getElementById('mrec-amount').value='';
+  document.getElementById('mrec-days').value='30';
+  document.getElementById('mrec-next').value=new Date().toISOString().slice(0,10);
+  document.getElementById('mrec-idx').value='';
+  document.getElementById('mrec-del').style.display='none';
+  openModal('modal-recur');
+}
+function openEditRecur(i){
+  const r=state.recurring[i];
+  document.getElementById('mrec-title').textContent=lang==='uz'?'Takroriy to\'lovni tahrirlash':'Редактировать платёж';
+  document.getElementById('mrec-name').value=r.name;
+  document.getElementById('mrec-amount').value=r.amount;
+  document.getElementById('mrec-karta').value=r.karta;
+  document.getElementById('mrec-cat').value=r.cat;
+  document.getElementById('mrec-days').value=r.days;
+  document.getElementById('mrec-next').value=r.next;
+  document.getElementById('mrec-idx').value=i;
+  document.getElementById('mrec-del').style.display='block';
+  openModal('modal-recur');
+}
+function saveRecur(){
+  const name=document.getElementById('mrec-name').value.trim();if(!name)return;
+  const obj={
+    name,
+    amount:parseFloat(document.getElementById('mrec-amount').value)||0,
+    karta:document.getElementById('mrec-karta').value,
+    cat:document.getElementById('mrec-cat').value,
+    days:parseInt(document.getElementById('mrec-days').value)||30,
+    next:document.getElementById('mrec-next').value
+  };
+  const idx=document.getElementById('mrec-idx').value;
+  if(idx!=='')state.recurring[parseInt(idx)]=obj;
+  else state.recurring.push(obj);
+  save();closeModal('modal-recur');renderSozlama();renderRecurAlerts();
+}
+function deleteRecur(){
+  const idx=document.getElementById('mrec-idx').value;
+  if(idx==='')return;
+  state.recurring.splice(parseInt(idx),1);
+  save();closeModal('modal-recur');renderSozlama();renderRecurAlerts();
+}
+
+function renderRecurAlerts(){
+  const el=document.getElementById('recur-alerts');
+  const today=new Date();
+  const alerts=state.recurring.filter(r=>{
+    const next=new Date(r.next);
+    const diff=Math.ceil((next-today)/(1000*60*60*24));
+    return diff<=3;
+  });
+  if(!alerts.length){el.innerHTML='';return;}
+  el.innerHTML=alerts.map((r,i)=>{
+    const next=new Date(r.next);
+    const diff=Math.ceil((next-today)/(1000*60*60*24));
+    const overdue=diff<0;
+    return `<div style="background:${overdue?'var(--red-bg)':'#FFF3CD'};border:1px solid ${overdue?'var(--red-bd)':'#FFCA2C'};border-radius:var(--r);padding:8px 12px;margin-bottom:8px;font-size:13px;display:flex;align-items:center;justify-content:space-between">
+      <span>🔔 <b>${r.name}</b> — ${fmt(r.amount)} · ${overdue?L().recurOverdue:L().recurDue} (${r.next})</span>
+    </div>`;
+  }).join('');
+}
+
+// ============================================================
+// FORM
+// ============================================================
+function setType(t){
+  txType=t;
+  document.getElementById('tb-k').className='type-btn'+(t==='kirim'?' k':'');
+  document.getElementById('tb-c').className='type-btn'+(t==='chiqim'?' c':'');
+  document.getElementById('tb-o').className='type-btn'+(t==='otkazma'?' o':'');
+  const isO=t==='otkazma';
+  document.getElementById('field-karta').className='field'+(isO?' hide':'');
+  document.getElementById('field-cat').className='field'+(isO?' hide':'');
+  document.getElementById('otkazma-fields').className=isO?'':'hide';
+  fillCatSelect();checkWarn();
+}
+
+function checkWarn(){
+  const wb=document.getElementById('warn-bar');
+  if(txType==='kirim'){wb.className='warn-bar';return;}
+  const amount=parseFloat(document.getElementById('amount').value)||0;
+  if(!amount){wb.className='warn-bar';return;}
+  const b=getBalances();
+  const kartaId=txType==='otkazma'
+    ?document.getElementById('karta-from').value
+    :document.getElementById('karta').value;
+  const bal=b[kartaId]||0;
+  if(amount>bal){
+    wb.className='warn-bar on';
+    wb.textContent=L().warnInsuf+' ('+fmt(bal)+')';
+  } else wb.className='warn-bar';
+}
+
+function handleImg(input){
+  const file=input.files[0];if(!file)return;
+  if(file.size>10*1024*1024){alert('Max 10MB!');return;}
+  const reader=new FileReader();
+  reader.onload=e=>{
+    pendingImg=e.target.result;
+    document.getElementById('img-preview').src=pendingImg;
+    document.getElementById('img-preview').style.display='block';
+    document.getElementById('img-lbl').textContent=L().imgSel;
+  };
+  reader.readAsDataURL(file);
+}
+
+function addTx(){
+  const amount=parseFloat(document.getElementById('amount').value);
+  if(!amount||amount<=0){alert(lang==='uz'?'Miqdor kiriting':'Введите сумму');return;}
+  const dt=document.getElementById('tx-dt').value||todayISO();
+  const note=document.getElementById('note').value.trim();
+  const cur=document.getElementById('currency-sel').value||state.settings.currency;
+  const b=getBalances();
+
+  if(txType==='otkazma'){
+    const from=document.getElementById('karta-from').value;
+    const to=document.getElementById('karta-to').value;
+    if(from===to){alert(lang==='uz'?'Turli hisoblarni tanlang':'Выберите разные счета');return;}
+    if(amount>(b[from]||0))if(!confirm(L().warnInsuf+'\n'+L().confirmDel.replace('?','')))return;
+    state.txs.push({id:uid(),type:'otkazma',amount,from,to,dt,note,currency:cur,img:pendingImg||null,cat:''});
+  } else {
+    const karta=document.getElementById('karta').value;
+    const cat=document.getElementById('cat').value;
+    if(txType==='chiqim'&&amount>(b[karta]||0))if(!confirm(L().warnInsuf))return;
+    state.txs.push({id:uid(),type:txType,amount,karta,cat,dt,note,currency:cur,img:pendingImg||null});
+  }
+  document.getElementById('amount').value='';
+  document.getElementById('note').value='';
+  document.getElementById('warn-bar').className='warn-bar';
+  document.getElementById('img-preview').style.display='none';
+  document.getElementById('img-lbl').textContent=L().imgLbl;
+  document.getElementById('img-input').value='';
+  pendingImg=null;
+  save();renderAll();
+}
+
+// ============================================================
+// TARIX
+// ============================================================
+function getFiltered(){
+  const q=(document.getElementById('search-q')?.value||'').toLowerCase();
+  const ft=document.getElementById('f-type')?.value||'';
+  const fk=document.getElementById('f-karta')?.value||'';
+  const fm=document.getElementById('f-month')?.value||'';
+  const fc=document.getElementById('f-cat')?.value||'';
+  return state.txs.filter(t=>{
+    if(ft&&t.type!==ft)return false;
+    if(fk&&t.karta!==fk&&t.from!==fk&&t.to!==fk)return false;
+    if(fm&&monthKey(t.dt)!==fm)return false;
+    if(fc&&t.cat!==fc)return false;
+    if(q&&!((t.cat||'').toLowerCase().includes(q))&&!((t.note||'').toLowerCase().includes(q))&&!fmtDate(t.dt).includes(q))return false;
+    return true;
+  });
+}
+
+function updateFilters(){
+  const fm=document.getElementById('f-month');if(!fm)return;
+  const cur=fm.value;
+  const months=[...new Set(state.txs.map(t=>monthKey(t.dt)))].sort().reverse();
+  fm.innerHTML=`<option value="">${L().allMonths}</option>`+months.map(m=>`<option value="${m}">${monthLabel(m+'-01')}</option>`).join('');
+  if(cur)fm.value=cur;
+  const ft=document.getElementById('f-type');if(!ft)return;
+  const curT=ft.value;
+  ft.innerHTML=`<option value="">${L().allTypes}</option>`+Object.entries(L().typeLabels).map(([v,n])=>`<option value="${v}">${n}</option>`).join('');
+  if(curT)ft.value=curT;
+}
+
+function renderTarix(){
+  updateFilters();
+  const f=getFiltered().sort((a,b)=>b.dt.localeCompare(a.dt));
+  const el=document.getElementById('tx-list');
+  if(!f.length){el.innerHTML=`<div class="empty-msg">${L().empty}</div>`;return;}
+  el.innerHTML=f.map(t=>{
+    const ri=state.txs.indexOf(t);
+    const isEditing=editingIdx===ri;
+    const acc=t.type==='otkazma'
+      ?(getAcc(t.from).name+' → '+getAcc(t.to).name)
+      :getAcc(t.karta).name;
+    const accColor=t.type==='otkazma'?'#888':getAcc(t.karta||t.from).color;
+    const ac=t.type==='kirim'?'k':t.type==='chiqim'?'c':'o';
+    const px=t.type==='kirim'?'+':t.type==='chiqim'?'-':'⇄';
+    const tl=L().typeLabels[t.type];
+    return `<div class="tx-item${isEditing?' editing':''}">
+      ${t.img?`<img class="tx-thumb" src="${t.img}">`:''}
+      <div class="tx-info">
+        <div class="tx-cat">${t.cat||tl}</div>
+        <div class="tx-meta" style="color:${accColor}">${acc}</div>
+        <div class="tx-meta">${fmtDT(t.dt)}</div>
+        ${t.note?`<div class="tx-note-text">${t.note}</div>`:''}
+        ${t.img&&!isEditing?`<div style="font-size:11px;color:var(--blue);cursor:pointer" onclick="toggleImg(${ri})">📷 Rasm</div>`:''}
+      </div>
+      <div class="tx-right">
+        <div class="tx-amount ${ac}">${px}${fmt(t.amount,t.currency)}</div>
+        <div class="tx-actions">
+          <button class="tx-btn edt" onclick="startEdit(${ri})">${L().edt}</button>
+          <button class="tx-btn del" onclick="delTx(${ri})">${L().del}</button>
+        </div>
+      </div>
+    </div>`+(isEditing?renderEditForm(t,ri):'');
+  }).join('');
+}
+
+let shownImgs={};
+function toggleImg(ri){shownImgs[ri]=!shownImgs[ri];renderTarix();}
+
+function renderEditForm(t,ri){
+  const cats=(t.type==='kirim'?state.cats.kirim:state.cats.chiqim);
+  const catOpts=cats.map(c=>`<option value="${c}"${t.cat===c?' selected':''}>${c}</option>`).join('');
+  return `<div class="edit-form">
+    <div class="field-row">
+      <div class="field"><label>${L().amount}</label><input type="number" id="e-amount" value="${t.amount}" min="0"></div>
+      ${t.type!=='otkazma'?`<div class="field"><label>${L().cat}</label><select id="e-cat">${catOpts}</select></div>`:''}
+    </div>
+    <div class="field-row">
+      <div class="field"><label>${L().date}</label><input type="datetime-local" id="e-dt" value="${t.dt}"></div>
+      <div class="field"><label>${L().note}</label><input type="text" id="e-note" value="${t.note||''}"></div>
+    </div>
+    <div class="edit-actions">
+      <button class="btn-save" onclick="saveEdit(${ri})">${L().save}</button>
+      <button class="btn-cancel" onclick="cancelEdit()">${L().cancel}</button>
+    </div>
+  </div>`;
+}
+
+function startEdit(i){editingIdx=i;renderTarix();}
+function cancelEdit(){editingIdx=-1;renderTarix();}
+function saveEdit(i){
+  const amount=parseFloat(document.getElementById('e-amount').value)||0;
+  if(!amount)return;
+  const dt=document.getElementById('e-dt').value||todayISO();
+  const note=document.getElementById('e-note').value.trim();
+  const catEl=document.getElementById('e-cat');
+  state.txs[i].amount=amount;
+  state.txs[i].dt=dt;
+  state.txs[i].note=note;
+  if(catEl)state.txs[i].cat=catEl.value;
+  editingIdx=-1;save();renderAll();
+}
+function delTx(i){
+  if(!confirm(L().confirmDel))return;
+  if(editingIdx===i)editingIdx=-1;
+  state.txs.splice(i,1);save();renderAll();
+}
+
+// ============================================================
+// SUMMARY
+// ============================================================
+function renderSummary(){
+  const f=state.txs;
+  let ki=0,ch=0;
+  f.forEach(t=>{if(t.type==='kirim')ki+=t.amount;else if(t.type==='chiqim')ch+=t.amount;});
+  const net=ki-ch;const l=L();
+  document.getElementById('summary-row').innerHTML=`
+    <div class="sum-box"><div class="sum-box-label">${l.totalKirim}</div><div class="sum-box-val" style="color:var(--green)">+${fmt(ki)}</div></div>
+    <div class="sum-box"><div class="sum-box-label">${l.totalChiqim}</div><div class="sum-box-val" style="color:var(--red)">-${fmt(ch)}</div></div>
+    <div class="sum-box"><div class="sum-box-label">${l.balans}</div><div class="sum-box-val" style="color:${net<0?'var(--red)':'var(--green)'}">${fmt(net)}</div></div>`;
+}
+
+// ============================================================
+// GRAFIK
+// ============================================================
+function setPeriod(p){
+  gPeriod=p;
+  ['week','month','year'].forEach(x=>{
+    document.getElementById('gp-'+x).className='chip'+(x===p?' on':'');
+  });
+  renderGrafik();
+}
+
+function getTxsForPeriod(period,refDate){
+  const now=refDate||new Date();
+  return state.txs.filter(t=>{
+    const d=new Date(t.dt);
+    if(period==='week'){const diff=(now-d)/(1000*60*60*24);return diff>=0&&diff<7;}
+    if(period==='month')return d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth();
+    if(period==='year')return d.getFullYear()===now.getFullYear();
+    return true;
+  });
+}
+
+function renderGrafik(){
+  const fk=document.getElementById('g-karta')?.value||'';
+  const txs=getTxsForPeriod(gPeriod).filter(t=>!fk||(t.karta===fk||t.from===fk||t.to===fk));
+  const el=document.getElementById('grafik-wrap');
+  const colors=PALETTE;
+
+  // chiqim by cat
+  const ch={},ki={};
+  txs.forEach(t=>{
+    if(t.type==='chiqim')ch[t.cat]=(ch[t.cat]||0)+t.amount;
+    if(t.type==='kirim')ki[t.cat]=(ki[t.cat]||0)+t.amount;
+  });
+  const chArr=Object.entries(ch).sort((a,b)=>b[1]-a[1]);
+  const kiArr=Object.entries(ki).sort((a,b)=>b[1]-a[1]);
+  const maxCh=chArr[0]?chArr[0][1]:1;
+  const maxKi=kiArr[0]?kiArr[0][1]:1;
+
+  // pulse: daily totals
+  const pulseData=buildPulseData(txs,gPeriod);
+
+  let html=`<div class="chart-section">
+    <div class="chart-section-title">📉 ${L().totalChiqim}</div>
+    ${chArr.length?chArr.map(([c,v],i)=>`<div class="bar-row">
+      <div class="bar-lbl">${c}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.round(v/maxCh*100)}%;background:${colors[i%colors.length]}"></div></div>
+      <div class="bar-val">${fmt(v)}</div>
+    </div>`).join(''):`<div class="empty-msg">${L().noData}</div>`}
+  </div>
+  <div class="chart-section">
+    <div class="chart-section-title">📈 ${L().totalKirim}</div>
+    ${kiArr.length?kiArr.map(([c,v],i)=>`<div class="bar-row">
+      <div class="bar-lbl">${c}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.round(v/maxKi*100)}%;background:${colors[i%colors.length]}"></div></div>
+      <div class="bar-val">${fmt(v)}</div>
+    </div>`).join(''):`<div class="empty-msg">${L().noData}</div>`}
+  </div>
+  <div class="chart-section">
+    <div class="chart-section-title">〰️ Puls grafigi</div>
+    ${pulseData.length>1?renderPulseSVG(pulseData):`<div class="empty-msg">${L().noData}</div>`}
+  </div>`;
+
+  // per-account charts
+  state.accounts.forEach(acc=>{
+    const aTxs=txs.filter(t=>t.karta===acc.id||t.from===acc.id||t.to===acc.id);
+    if(!aTxs.length)return;
+    const aCh={};
+    aTxs.filter(t=>t.type==='chiqim').forEach(t=>{aCh[t.cat]=(aCh[t.cat]||0)+t.amount;});
+    const aArr=Object.entries(aCh).sort((a,b)=>b[1]-a[1]);
+    const aMax=aArr[0]?aArr[0][1]:1;
+    if(!aArr.length)return;
+    html+=`<div class="chart-section">
+      <div class="chart-section-title" style="color:${acc.color}">💳 ${acc.name}</div>
+      ${aArr.map(([c,v],i)=>`<div class="bar-row">
+        <div class="bar-lbl">${c}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${Math.round(v/aMax*100)}%;background:${acc.color}"></div></div>
+        <div class="bar-val">${fmt(v)}</div>
+      </div>`).join('')}
+    </div>`;
+  });
+
+  el.innerHTML=html;
+}
+
+function buildPulseData(txs,period){
+  const buckets={};
+  txs.forEach(t=>{
+    const key=t.dt?t.dt.slice(0,10):'';
+    if(!key)return;
+    if(!buckets[key])buckets[key]={k:0,c:0};
+    if(t.type==='kirim')buckets[key].k+=t.amount;
+    if(t.type==='chiqim')buckets[key].c+=t.amount;
+  });
+  return Object.entries(buckets).sort((a,b)=>a[0].localeCompare(b[0])).map(([d,v])=>({d,net:v.k-v.c,k:v.k,c:v.c}));
+}
+
+function renderPulseSVG(data){
+  const W=600,H=70,pad=10;
+  const nets=data.map(d=>d.net);
+  const maxV=Math.max(...nets.map(Math.abs),1);
+  const midY=H/2;
+  const pts=data.map((d,i)=>{
+    const x=pad+(i/(data.length-1||1))*(W-2*pad);
+    const y=midY-(d.net/maxV)*(midY-pad);
+    return [x,y];
+  });
+  const path='M'+pts.map(p=>p.join(',')).join(' L');
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:70px">
+    <line x1="${pad}" y1="${midY}" x2="${W-pad}" y2="${midY}" stroke="var(--border)" stroke-width="1"/>
+    <path d="${path}" fill="none" stroke="#378ADD" stroke-width="2" stroke-linejoin="round"/>
+    ${pts.map((p,i)=>`<circle cx="${p[0]}" cy="${p[1]}" r="3" fill="${data[i].net>=0?'var(--green)':'var(--red)'}" />`).join('')}
+  </svg>`;
+}
+
+// ============================================================
+// BUDJET
+// ============================================================
+function renderBudjet(){
+  if(!state.settings.budgets)state.settings.budgets={};
+  const now=new Date();
+  const curMonth=state.txs.filter(t=>{
+    const d=new Date(t.dt);
+    return d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth();
+  });
+
+  // Budget per cat
+  const catSpend={};
+  curMonth.filter(t=>t.type==='chiqim').forEach(t=>{catSpend[t.cat]=(catSpend[t.cat]||0)+t.amount;});
+
+  document.getElementById('budget-hint').textContent=L().budgetHint;
+  document.getElementById('budget-cats').innerHTML=state.cats.chiqim.map(cat=>{
+    const spent=catSpend[cat]||0;
+    const limit=state.settings.budgets[cat]||0;
+    const pct=limit?Math.min(Math.round(spent/limit*100),100):0;
+    const over=limit&&spent>limit;
+    return `<div class="budget-item">
+      <div class="budget-lbl">${cat}</div>
+      <div class="budget-track"><div class="budget-fill" style="width:${pct}%;background:${over?'var(--red)':'var(--blue-bd)'}"></div></div>
+      <div class="budget-val">${fmt(spent)}${limit?' / '+fmt(limit):''}</div>
+      <input type="number" placeholder="Limit" value="${limit||''}" style="width:80px;font-size:11px;padding:3px 6px" oninput="setBudget('${cat}',this.value)">
+    </div>`;
+  }).join('');
+
+  // Prediction
+  const pred=buildPrediction();
+  document.getElementById('predict-wrap').innerHTML=`<p style="font-size:12px;color:var(--text3);margin-bottom:8px">${L().forecastNote}</p>`+
+    pred.map(([cat,v])=>`<div class="predict-item"><span>${cat}</span><span style="color:var(--red)">${fmt(v)}</span></div>`).join('')||
+    `<div class="empty-msg">${L().noData}</div>`;
+
+  // Compare
+  renderCompare();
+}
+
+function setBudget(cat,val){
+  if(!state.settings.budgets)state.settings.budgets={};
+  state.settings.budgets[cat]=parseFloat(val)||0;
+  save();
+}
+
+function buildPrediction(){
+  const now=new Date();
+  const months=[];
+  for(let i=1;i<=3;i++){
+    const d=new Date(now.getFullYear(),now.getMonth()-i,1);
+    months.push({y:d.getFullYear(),m:d.getMonth()});
+  }
+  const catTotals={};
+  months.forEach(({y,m})=>{
+    state.txs.filter(t=>{const d=new Date(t.dt);return t.type==='chiqim'&&d.getFullYear()===y&&d.getMonth()===m;})
+      .forEach(t=>{catTotals[t.cat]=(catTotals[t.cat]||[]); catTotals[t.cat].push(t.amount);});
+  });
+  return Object.entries(catTotals).map(([cat,vals])=>[cat,Math.round(vals.reduce((a,b)=>a+b,0)/3)]).sort((a,b)=>b[1]-a[1]);
+}
+
+function renderCompare(){
+  const now=new Date();
+  const prevMonth=new Date(now.getFullYear(),now.getMonth()-1,1);
+  const getMonthData=(y,m)=>{
+    const txs=state.txs.filter(t=>{const d=new Date(t.dt);return d.getFullYear()===y&&d.getMonth()===m;});
+    const ki=txs.filter(t=>t.type==='kirim').reduce((s,t)=>s+t.amount,0);
+    const ch=txs.filter(t=>t.type==='chiqim').reduce((s,t)=>s+t.amount,0);
+    return{ki,ch};
+  };
+  const cur=getMonthData(now.getFullYear(),now.getMonth());
+  const prev=getMonthData(prevMonth.getFullYear(),prevMonth.getMonth());
+  const curLbl=monthLabel(now.toISOString().slice(0,7)+'-01');
+  const prevLbl=monthLabel(prevMonth.toISOString().slice(0,7)+'-01');
+
+  document.getElementById('compare-wrap').innerHTML=`
+    <div class="compare-grid">
+      <div class="sum-box"><div class="sum-box-label">${prevLbl} — ${L().totalKirim}</div><div class="sum-box-val" style="color:var(--green)">+${fmt(prev.ki)}</div></div>
+      <div class="sum-box"><div class="sum-box-label">${curLbl} — ${L().totalKirim}</div><div class="sum-box-val" style="color:var(--green)">+${fmt(cur.ki)}</div></div>
+      <div class="sum-box"><div class="sum-box-label">${prevLbl} — ${L().totalChiqim}</div><div class="sum-box-val" style="color:var(--red)">-${fmt(prev.ch)}</div></div>
+      <div class="sum-box"><div class="sum-box-label">${curLbl} — ${L().totalChiqim}</div><div class="sum-box-val" style="color:var(--red)">-${fmt(cur.ch)}</div></div>
+    </div>`;
+}
+
+// ============================================================
+// SOZLAMA
+// ============================================================
+function renderSozlama(){
+  // accounts list
+  const b=getBalances();
+  document.getElementById('acc-manage-list').innerHTML=state.accounts.map(a=>`
+    <div class="acc-list-item">
+      <div class="color-dot" style="background:${a.color}"></div>
+      <div class="acc-list-name">${a.name} <span style="color:var(--text3);font-size:11px">${a.short}</span></div>
+      <div class="acc-list-bal">${fmt(b[a.id]||0)}</div>
+      <button onclick="openEditAccount('${a.id}')" style="font-size:11px">${L().edt}</button>
+    </div>`).join('');
+
+  // cats
+  document.getElementById('cat-manage').innerHTML=
+    ['kirim','chiqim'].map(type=>
+      `<div style="margin-bottom:8px"><div class="section-label">${L().typeLabels[type]}</div>`+
+      state.cats[type].map((c,i)=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border2)">
+        <span style="font-size:13px">${c}</span>
+        <button onclick="openEditCat('${type}',${i})" style="font-size:11px">${L().edt}</button>
+      </div>`).join('')+'</div>'
+    ).join('');
+
+  // recurring
+  const today=new Date();
+  document.getElementById('recur-manage').innerHTML=state.recurring.length
+    ?state.recurring.map((r,i)=>{
+      const next=new Date(r.next);
+      const diff=Math.ceil((next-today)/(1000*60*60*24));
+      const over=diff<0;
+      return `<div class="recur-item">
+        <div class="recur-info">
+          <div class="recur-name">${r.name}</div>
+          <div class="recur-meta">${fmt(r.amount)} · Har ${r.days} kun · ${r.next}</div>
+        </div>
+        <span class="badge ${over?'badge-warn':'badge-ok'}">${over?L().recurOverdue:diff+'k'}</span>
+        <button onclick="openEditRecur(${i})" style="font-size:11px;margin-left:6px">${L().edt}</button>
+      </div>`;
+    }).join('')
+    :`<div class="empty-msg" style="padding:1rem">${L().empty}</div>`;
+
+  // lang toggle state
+  document.getElementById('default-currency').value=state.settings.currency;
+}
+
+// ============================================================
+// EXPORT / IMPORT
+// ============================================================
+function exportJSON(){
+  const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='moliya_data.json';a.click();
+}
+function importJSON(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const d=JSON.parse(e.target.result);
+      if(d.txs){state={...state,...d};save();renderAll();alert(lang==='uz'?'Import muvaffaqiyatli!':'Импорт успешен!');}
+      else alert('Noto\'g\'ri format!');
+    }catch(e){alert('Xato: '+e.message);}
+  };
+  reader.readAsText(file);
+}
+function exportCSV(){
+  const l=L();
+  let csv='Sana,Tur,Miqdor,Valyuta,Hisob,Kategoriya,Izoh\n';
+  state.txs.forEach(t=>{
+    const acc=t.type==='otkazma'?(getAcc(t.from).name+'→'+getAcc(t.to).name):getAcc(t.karta).name;
+    csv+=`${fmtDT(t.dt)},${l.typeLabels[t.type]},${t.amount},${t.currency||state.settings.currency},"${acc}","${t.cat||''}","${t.note||''}"\n`;
+  });
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='moliya.csv';a.click();
+}
+function exportPDF(){
+  window.print();
+}
+function clearAll(){
+  if(!confirm(L().confirmClear))return;
+  state.txs=[];state.settings.budgets={};
+  save();renderAll();
+}
+
+// ============================================================
+// MODAL
+// ============================================================
+function openModal(id){document.getElementById(id).className='modal-bg on';}
+function closeModal(id){document.getElementById(id).className='modal-bg';}
+
+// ============================================================
+// RENDER ALL
+// ============================================================
+function renderAll(){
+  renderAccountCards();
+  renderSummary();
+  renderRecurAlerts();
+  if(activePage==='main'){}
+  else if(activePage==='tarix')renderTarix();
+  else if(activePage==='grafik')renderGrafik();
+  else if(activePage==='budjet')renderBudjet();
+  else if(activePage==='sozlama')renderSozlama();
+}
+
+// ============================================================
+// INIT
+// ============================================================
+load();
+lang=state.settings.lang||'uz';
+document.getElementById('btn-uz').className='chip'+(lang==='uz'?' on':'');
+document.getElementById('btn-ru').className='chip'+(lang==='ru'?' on':'');
+applyDark();
+fillCurrencySelects();
+fillAccountSelects();
+fillCatSelect();
+setType('kirim');
+document.getElementById('tx-dt').value=todayISO();
+applyLang();
+renderAll();
+</script>
+
+<!-- PWA O'rnatish tugmasi -->
+<div id="install-bar" style="display:none;position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;padding:12px 20px;border-radius:24px;font-size:13px;font-weight:600;cursor:pointer;z-index:999;box-shadow:0 4px 20px rgba(0,0,0,0.3);gap:8px;align-items:center" onclick="installPWA()">
+  📲 <span id="install-text">Telefonga o'rnatish</span>
+</div>
+
+<script>
+// ============================================================
+// PWA & SERVICE WORKER
+// ============================================================
+let deferredPrompt = null;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  const bar = document.getElementById('install-bar');
+  bar.style.display = 'flex';
+  // Update text based on lang
+  document.getElementById('install-text').textContent = 
+    (window.lang || 'uz') === 'uz' ? "📲 Telefonga o'rnatish" : "📲 Установить на телефон";
+});
+
+async function installPWA() {
+  if (!deferredPrompt) {
+    // iOS uchun manual yo'riqnoma
+    alert(
+      (window.lang||'uz')==='uz'
+      ? "iPhone uchun:
+1. Safari da oching
+2. Pastdagi 'Share' tugmasini bosing
+3. 'Add to Home Screen' tanlang"
+      : "Для iPhone:
+1. Откройте в Safari
+2. Нажмите кнопку 'Поделиться'
+3. Выберите 'На экран Домой'"
+    );
+    return;
+  }
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  if (outcome === 'accepted') {
+    document.getElementById('install-bar').style.display = 'none';
+  }
+  deferredPrompt = null;
+}
+
+window.addEventListener('appinstalled', () => {
+  document.getElementById('install-bar').style.display = 'none';
+  deferredPrompt = null;
+});
+
+// Service Worker — oflayn ishlash uchun
+if ('serviceWorker' in navigator) {
+  const swCode = `
+    const CACHE = 'moliya-v5';
+    self.addEventListener('install', e => {
+      self.skipWaiting();
+    });
+    self.addEventListener('activate', e => {
+      e.waitUntil(caches.keys().then(keys => 
+        Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
+      ));
+    });
+    self.addEventListener('fetch', e => {
+      // Google Scripts uchun network first
+      if (e.request.url.includes('script.google.com')) {
+        e.respondWith(fetch(e.request).catch(() => new Response('{}', {headers: {'Content-Type': 'application/json'}})));
+        return;
+      }
+      e.respondWith(
+        caches.match(e.request).then(cached => cached || fetch(e.request))
+      );
+    });
+  `;
+  const swBlob = new Blob([swCode], {type: 'application/javascript'});
+  const swURL = URL.createObjectURL(swBlob);
+  navigator.serviceWorker.register(swURL, {scope: './'}).catch(() => {});
+}
+</script>
+</body>
+</html>
