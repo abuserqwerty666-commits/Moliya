@@ -2,6 +2,21 @@
 <html lang="uz">
 <head>
 <meta charset="UTF-8">
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyB0p5jw-LYsJbd4WXbAlU8ngJE8hHOj4Qs",
+  authDomain: "moliya-7739c.firebaseapp.com",
+  projectId: "moliya-7739c",
+  storageBucket: "moliya-7739c.firebasestorage.app",
+  messagingSenderId: "480356959454",
+  appId: "1:480356959454:web:bd55fc7cc597c21f412e4f"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const DOC = db.collection('moliya').doc('data');
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Moliya</title>
 <meta name="description" content="Shaxsiy moliya dasturi">
@@ -598,106 +613,83 @@ function getBalances(){
 // ============================================================
 // GOOGLE SHEETS SYNC
 // ============================================================
-const SHEET_URL = 'https://script.google.com/macros/s/AKfycbwah9N5OdnM0GYiu2FN29ICCq7ADonDwkt3EuHYP30Tv-hnYh_Ghw7sIVkkfxz-w7Jq/exec';
-let syncStatus = 'idle'; // idle | saving | loading | ok | error
-let syncTimeout = null;
+// =====================
+// FIREBASE SYNC
+// =====================
+let syncTimer = null;
 
-function setSyncStatus(s, msg){
-  syncStatus = s;
+function setSyncStatus(s) {
   const el = document.getElementById('sync-status');
-  if(!el) return;
-  const icons = {idle:'☁️', saving:'⏳', loading:'⏳', ok:'✅', error:'❌'};
-  const msgs = {
-    idle: lang==='uz' ? '☁️ Bulut' : '☁️ Облако',
-    saving: lang==='uz' ? '⏳ Saqlanmoqda...' : '⏳ Сохранение...',
-    loading: lang==='uz' ? '⏳ Yuklanmoqda...' : '⏳ Загрузка...',
-    ok: lang==='uz' ? '✅ Saqlandi' : '✅ Сохранено',
-    error: lang==='uz' ? '❌ Xato: '+msg : '❌ Ошибка: '+msg
-  };
-  el.textContent = msgs[s] || s;
-  el.style.color = s==='ok'?'var(--green)':s==='error'?'var(--red)':'var(--text3)';
+  if (!el) return;
+  const t = {idle:'☁️ Bulut', saving:'⏳...', ok:'✅ Saqlandi', error:'❌ Xato', loading:'⏳ Yuklanmoqda...'};
+  el.textContent = t[s] || s;
+  el.style.color = s==='ok' ? 'var(--green)' : s==='error' ? 'var(--red)' : 'var(--text3)';
 }
 
-function save(){
-  // 1. Always save to localStorage as backup
-  try{localStorage.setItem('mol3_state', JSON.stringify(state));}catch(e){}
-  // 2. Debounce cloud save - wait 1.5s after last change
-  clearTimeout(syncTimeout);
+function save() {
+  try { localStorage.setItem('mol3_state', JSON.stringify(state)); } catch(e) {}
+  clearTimeout(syncTimer);
   setSyncStatus('saving');
-  syncTimeout = setTimeout(()=>saveToCloud(), 1500);
+  syncTimer = setTimeout(saveToCloud, 1500);
 }
 
-async function saveToCloud(){
-  try{
-    setSyncStatus('saving');
-    const resp = await fetch(SHEET_URL, {
-      method: 'POST',
-      body: JSON.stringify(state),
-      headers: {'Content-Type': 'text/plain'}
-    });
-    const text = await resp.text();
-    if(text.includes('OK') || resp.ok){
-      setSyncStatus('ok');
-      setTimeout(()=>setSyncStatus('idle'), 3000);
-    } else {
-      setSyncStatus('error', text.slice(0,30));
-    }
-  } catch(e){
-    setSyncStatus('error', e.message.slice(0,30));
-  }
+function saveToCloud() {
+  DOC.set(state)
+    .then(() => { setSyncStatus('ok'); setTimeout(() => setSyncStatus('idle'), 3000); })
+    .catch(e => { console.error(e); setSyncStatus('error'); });
 }
 
-async function loadFromCloud(){
-  setSyncStatus('loading');
-  try{
-    const resp = await fetch(SHEET_URL + '?t=' + Date.now());
-    const text = await resp.text();
-    if(text && text !== '{}' && text.trim().startsWith('{')){
-      const p = JSON.parse(text);
-      if(p.txs && p.txs.length > 0){
-        if(p.accounts)state.accounts=p.accounts;
-        if(p.txs)state.txs=p.txs;
-        if(p.cats)state.cats=p.cats;
-        if(p.recurring)state.recurring=p.recurring;
-        if(p.settings)state.settings={...state.settings,...p.settings};
-        if(!state.settings.budgets)state.settings.budgets={};
-        // Also update localStorage
-        try{localStorage.setItem('mol3_state', JSON.stringify(state));}catch(e){}
-        setSyncStatus('ok');
-        setTimeout(()=>setSyncStatus('idle'), 2000);
+function loadFromCloud() {
+  const el = document.getElementById('sync-status');
+  if (el) el.textContent = '⏳ Yuklanmoqda...';
+  return DOC.get().then(doc => {
+    if (doc.exists) {
+      const data = doc.data();
+      if (data && data.txs !== undefined) {
+        if (data.accounts && data.accounts.length > 0) state.accounts = data.accounts;
+        state.txs = data.txs || [];
+        if (data.cats) state.cats = data.cats;
+        if (data.recurring) state.recurring = data.recurring;
+        if (data.settings) state.settings = {...state.settings, ...data.settings};
+        if (!state.settings.budgets) state.settings.budgets = {};
+        try { localStorage.setItem('mol3_state', JSON.stringify(state)); } catch(e) {}
+        if (el) el.textContent = '✅ ' + state.txs.length + ' ta yozuv';
+        setTimeout(() => setSyncStatus('idle'), 4000);
         return true;
       }
     }
-    setSyncStatus('idle');
+    if (el) el.textContent = "☁️ Bulut (bo'sh)";
     return false;
-  } catch(e){
-    setSyncStatus('error', e.message.slice(0,20));
+  }).catch(e => {
+    console.error(e);
+    if (el) el.textContent = '❌ Xato';
     return false;
-  }
+  });
 }
 
-function load(){
-  // Load from localStorage first (fast)
-  try{
-    const d=localStorage.getItem('mol3_state');
-    if(d){
-      const p=JSON.parse(d);
-      if(p.accounts)state.accounts=p.accounts;
-      if(p.txs)state.txs=p.txs;
-      if(p.cats)state.cats=p.cats;
-      if(p.recurring)state.recurring=p.recurring;
-      if(p.settings)state.settings={...state.settings,...p.settings};
-      if(!state.settings.budgets)state.settings.budgets={};
+function load() {
+  try {
+    const d = localStorage.getItem('mol3_state');
+    if (d) {
+      const p = JSON.parse(d);
+      if (p.accounts) state.accounts = p.accounts;
+      if (p.txs) state.txs = p.txs;
+      if (p.cats) state.cats = p.cats;
+      if (p.recurring) state.recurring = p.recurring;
+      if (p.settings) state.settings = {...state.settings, ...p.settings};
+      if (!state.settings.budgets) state.settings.budgets = {};
     }
-  }catch(e){}
-  // Then try to load from cloud (async - updates if newer data found)
+  } catch(e) {}
   loadFromCloud().then(loaded => {
-    if(loaded){
-      lang=state.settings.lang||'uz';
+    if (loaded) {
+      lang = state.settings.lang || 'uz';
+      document.getElementById('btn-uz').className = 'chip' + (lang==='uz' ? ' on' : '');
+      document.getElementById('btn-ru').className = 'chip' + (lang==='ru' ? ' on' : '');
       applyDark();
       fillCurrencySelects();
       fillAccountSelects();
       fillCatSelect();
+      setType(txType);
       applyLang();
       renderAll();
     }
